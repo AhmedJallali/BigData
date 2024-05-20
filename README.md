@@ -136,6 +136,7 @@ object MyKafkaConsumer {
     consoleQuery301.awaitTermination()
   }
 }
+```
 
 ## Demo
 Below are some screenshots demonstrating how my code functions:
