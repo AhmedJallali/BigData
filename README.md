@@ -2,8 +2,8 @@
 
 ## Project Architecture
 I have set up two environments for this project:
-1. **Windows Environment**: Spark is installed (via IntelliJ) to collect logs using Scala.
-2. **Linux Environment**: Kafka is installed and responsible for consuming logs from the specified topic.
+1. **Windows Environment**: Spark is installed (via IntelliJ) to consuming logs using Scala.
+2. **Linux Environment**: Kafka is installed and responsible for producing logs to an specified topic.
 
 Here my project architecture :
 ![Architecture Diagram](https://raw.githubusercontent.com/AhmedJallali/BigData/main/Arch1.png)
