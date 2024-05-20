@@ -1,4 +1,4 @@
-# Data Streaming - Log Analysis
+# Data Streaming - Log Analysis using Scala
 
 ## Tools Used
 - **IDE**: IntelliJ Ultimate 2023.3 + JDK Corretto v11
