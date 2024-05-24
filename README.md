@@ -142,12 +142,10 @@ object MyKafkaConsumer2 {
 ## Demo
 Below are some screenshots demonstrating how my code functions:
 * ERROR CODE 404
-![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR404.png)
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR404.PNG)
 * ERROR CODE 500
-![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR500.png)
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR500.PNG)
 * ERROR CODE 301
-![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR301.png)
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR301.PNG)
 * COUNT & RATIO
-![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/Ratio.png)
-
-![Screenshot 2](https://github.com/AhmedJallali/BigData/blob/main/Tab2.png)
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/Ratio.PNG)
