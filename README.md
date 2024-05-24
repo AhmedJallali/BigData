@@ -34,12 +34,12 @@ Below my scala code :
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions._
 
-object MyKafkaConsumer {
+object MyKafkaConsumer2 {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession
       .builder
       .appName("KafkaConsumer")
-      .config("spark.master", "local[*]") 
+      .config("spark.master", "local[*]")
       .getOrCreate()
 
     import spark.implicits._
@@ -47,60 +47,60 @@ object MyKafkaConsumer {
     val kafkaDF = spark
       .readStream
       .format("kafka")
-      .option("kafka.bootstrap.servers", "192.168.1.16:9092")
-      .option("subscribe", "mp2l-test3")
+      .option("kafka.bootstrap.servers", "192.168.201.243:9092")
+      .option("subscribe", "mp2l-test4")
       .load()
 
-    val parsedLogsDF404 = kafkaDF
-      .selectExpr("CAST(value AS STRING)")
-      .as[String]
-      .filter($"value".isNotNull)
+    val totalMessagesDF = kafkaDF.selectExpr("CAST(value AS STRING)").as[String].filter($"value".isNotNull)
+
+    val parsedLogsDF404 = totalMessagesDF
       .filter($"value".like("% 404 %"))
       .select(
         regexp_extract($"value", raw"(\d+\.\d+\.\d+\.\d+)", 1).alias("ip"),
         regexp_extract($"value", raw"\[(.*?)\]", 1).alias("timestamp"),
-        regexp_extract($"value", raw"http:(\S+)", 1).alias("siteweb"),
-        regexp_extract($"value", raw"""\s(\d{3})\s""", 1).cast("int").alias("error_code")
+        regexp_extract($"value", """raw"[A-Z]+ (.*?) HTTP""", 1).alias("request"),
+        regexp_extract($"value", raw"""\s(\d{3})\s""", 1).cast("int").alias("status_code"),
+        regexp_extract($"value", raw"\s(\d+)\s(https?://\S+)", 2).alias("siteweb")
       )
 
-    val parsedLogsDF500 = kafkaDF
-      .selectExpr("CAST(value AS STRING)")
-      .as[String]
-      .filter($"value".isNotNull)
+    val parsedLogsDF500 = totalMessagesDF
       .filter($"value".like("% 500 %"))
       .select(
         regexp_extract($"value", raw"(\d+\.\d+\.\d+\.\d+)", 1).alias("ip"),
         regexp_extract($"value", raw"\[(.*?)\]", 1).alias("timestamp"),
-        regexp_extract($"value", raw"http:(\S+)", 1).alias("siteweb"),
-        regexp_extract($"value", raw"""\s(\d{3})\s""", 1).cast("int").alias("error_code")
+        regexp_extract($"value", """raw"[A-Z]+ (.*?) HTTP""", 1).alias("request"),
+        regexp_extract($"value", raw"""\s(\d{3})\s""", 1).cast("int").alias("status_code"),
+        regexp_extract($"value", raw"\s(\d+)\s(https?://\S+)", 2).alias("siteweb")
       )
 
-    val parsedLogsDF301 = kafkaDF
-      .selectExpr("CAST(value AS STRING)")
-      .as[String]
-      .filter($"value".isNotNull)
+    val parsedLogsDF301 = totalMessagesDF
       .filter($"value".like("% 301 %"))
       .select(
         regexp_extract($"value", raw"(\d+\.\d+\.\d+\.\d+)", 1).alias("ip"),
         regexp_extract($"value", raw"\[(.*?)\]", 1).alias("timestamp"),
-        regexp_extract($"value", raw"http:(\S+)", 1).alias("siteweb"),
-        regexp_extract($"value", raw"""\s(\d{3})\s""", 1).cast("int").alias("error_code")
+        regexp_extract($"value", """raw"[A-Z]+ (.*?) HTTP""", 1).alias("request"),
+        regexp_extract($"value", raw"""\s(\d{3})\s""", 1).cast("int").alias("status_code"),
+        regexp_extract($"value", raw"\s(\d+)\s(https?://\S+)", 2).alias("siteweb")
       )
 
-    val countDF = kafkaDF
+    val countDF = totalMessagesDF
       .select(
         when($"value".like("% 301 %"), lit(1)).otherwise(lit(0)).alias("count301"),
         when($"value".like("% 404 %"), lit(1)).otherwise(lit(0)).alias("count404"),
-        when($"value".like("% 500 %"), lit(1)).otherwise(lit(0)).alias("count500")
+        when($"value".like("% 500 %"), lit(1)).otherwise(lit(0)).alias("count500"),
+        lit(1).alias("totalMessages")
       )
       .groupBy()
-      .sum("count301", "count404", "count500")
+      .sum("count301", "count404", "count500", "totalMessages")
       .withColumnRenamed("sum(count301)", "count301")
       .withColumnRenamed("sum(count404)", "count404")
       .withColumnRenamed("sum(count500)", "count500")
+      .withColumnRenamed("sum(totalMessages)", "totalMessages")
 
     val totalCountDF = countDF
-      .withColumn("total", $"count301" + $"count404" + $"count500")
+      .withColumn("percentage301", $"count301" / $"totalMessages" * 100)
+      .withColumn("percentage404", $"count404" / $"totalMessages" * 100)
+      .withColumn("percentage500", $"count500" / $"totalMessages" * 100)
 
     val consoleQueryTotal = totalCountDF
       .writeStream
@@ -136,9 +136,18 @@ object MyKafkaConsumer {
     consoleQuery301.awaitTermination()
   }
 }
+
 ```
 
 ## Demo
 Below are some screenshots demonstrating how my code functions:
-![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/Tab1.png)
+* ERROR CODE 404
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR404.png)
+* ERROR CODE 500
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR500.png)
+* ERROR CODE 301
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/ERR301.png)
+* COUNT & RATIO
+![Screenshot 1](https://github.com/AhmedJallali/BigData/blob/main/Ratio.png)
+
 ![Screenshot 2](https://github.com/AhmedJallali/BigData/blob/main/Tab2.png)
